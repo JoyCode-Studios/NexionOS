@@ -1,12 +1,12 @@
 [source]
 git = "https://github.com/pop-os/cosmic-term.git"
-branch = "master"
+rev = "<commit-hash>"
 
 [build]
 template = "custom"
 script = """
 DYNAMIC_INIT
-cookbook_cargo --no-default-features
+cookbook_cargo
 mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/10_cosmic-term"
 #TODO: install with just?
