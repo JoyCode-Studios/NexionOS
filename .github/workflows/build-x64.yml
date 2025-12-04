@@ -18,10 +18,23 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y live-build debootstrap
 
+      - name: Clean previous config/cache
+        run: |
+          cd nexion-live || mkdir nexion-live
+          cd nexion-live
+          sudo lb clean --purge || true
+          rm -rf config
+
       - name: Configure live-build
         run: |
           cd nexion-live
-          lb config --distribution bookworm --architectures amd64 --binary-images iso-hybrid --debian-installer live
+          lb config \
+            --distribution bookworm \
+            --architectures amd64 \
+            --binary-images iso-hybrid \
+            --debian-installer live \
+            --mirror-bootstrap http://deb.debian.org/debian/ \
+            --mirror-binary http://deb.debian.org/debian/
 
       - name: Copy custom config
         run: |
