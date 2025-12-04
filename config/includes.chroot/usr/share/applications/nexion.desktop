@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Nexion
+Comment=A fast, minimal browser that protects your privacy
+Exec=/usr/bin/nexion
+Icon=nexion
+Terminal=false
+Type=Application
+Categories=Network;WebBrowser;
+StartupNotify=true

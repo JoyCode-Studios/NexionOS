@@ -1,0 +1,5 @@
+#!/bin/bash
+# Replace Debian references with NexionOS
+sed -i 's/Debian/NexionOS/g' /etc/issue
+sed -i 's/Debian/NexionOS/g' /etc/issue.net
+sed -i 's/Debian/NexionOS/g' /etc/motd

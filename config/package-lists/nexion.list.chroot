@@ -1,0 +1,10 @@
+gnome-shell
+gdm3
+gnome-terminal
+nautilus
+network-manager
+sudo
+curl
+git
+/var/cache/apt/archives/nexion-x64.deb
+/var/cache/apt/archives/nexion-lite-deb-x64.deb
