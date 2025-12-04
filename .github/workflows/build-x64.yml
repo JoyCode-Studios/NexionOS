@@ -1,0 +1,40 @@
+name: Build NexionOS ISO
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install live-build
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y live-build debootstrap
+
+      - name: Configure live-build
+        run: |
+          mkdir nexion-live
+          cd nexion-live
+          lb config --distribution bookworm --architectures amd64 --binary-images iso-hybrid --debian-installer live
+
+      - name: Copy custom config
+        run: |
+          cp -r config/* nexion-live/config/
+
+      - name: Build ISO
+        run: |
+          cd nexion-live
+          sudo lb build
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexionos-iso
+          path: nexion-live/live-image-amd64.hybrid.iso
