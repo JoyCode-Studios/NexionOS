@@ -1,4 +1,4 @@
-name: Build NexionOS x64
+name: Build NexionOS x64 (Debian)
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
             syslinux \
             isolinux
 
-      - name: Configure live-build
+      - name: Configure live-build (Debian Bookworm)
         run: |
           cd nexion-live
           sudo lb clean --purge
@@ -36,7 +36,9 @@ jobs:
             --architecture amd64 \
             --distribution bookworm \
             --debian-installer live \
-            --archive-areas "main contrib non-free"
+            --archive-areas "main contrib non-free" \
+            --mirror-bootstrap http://deb.debian.org/debian/ \
+            --mirror-chroot http://deb.debian.org/debian/
 
       - name: Build ISO
         run: |
