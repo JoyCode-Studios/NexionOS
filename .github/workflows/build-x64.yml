@@ -56,7 +56,7 @@ jobs:
         # This executes the full build process (no 'sudo' required for lb build)
         run: |
           cd nexion-live
-          lb build
+          sudo lb build
 
       - name: ⬆️ Upload NexionOS ISO Artifact
         # This makes the final ISO downloadable from the GitHub Actions run page
