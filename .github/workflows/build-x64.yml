@@ -1,9 +1,11 @@
-name: Build NexionOS x64 (Debian)
+name: Build NexionOS x64 (Debian Bookworm)
+
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch: # Allows manual trigger
 
 jobs:
   build-x64:
@@ -11,11 +13,9 @@ jobs:
     
     steps:
       - name: ⬇️ Checkout repository
-        # Use the official action to clone your code
         uses: actions/checkout@v4
 
       - name: 🛠️ Install live-build dependencies
-        # Running apt-get update and install is standard
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -30,39 +30,55 @@ jobs:
             isolinux
 
       - name: ⚙️ Configure live-build (Debian Bookworm)
-        # CRITICAL FIX: The backslashes (\) ensure the command runs across multiple lines.
-        # FIX: Added --mode debian to prevent Ubuntu mirror usage.
-        # FIX: Added --iso-volume to fix the 32-character length warning.
         run: |
-          # Create directory and navigate into it for the build
           mkdir -p nexion-live
           cd nexion-live
           
-          # Clean up any previous configuration files
-          lb clean --purge
+          # Clean any previous configuration
+          lb clean --purge || true
           
-          # Configure live-build (no 'sudo' required here)
+          # Configure live-build for pure Debian
           lb config \
             --mode debian \
             --architecture amd64 \
             --distribution bookworm \
             --debian-installer live \
-            --archive-areas "main contrib non-free" \
+            --archive-areas "main contrib non-free non-free-firmware" \
             --mirror-bootstrap http://deb.debian.org/debian/ \
             --mirror-chroot http://deb.debian.org/debian/ \
-            --iso-volume "NexionOS_Bookworm_x64" # Shortened label to fix warning
-            
+            --mirror-binary http://deb.debian.org/debian/ \
+            --mirror-debian-installer http://deb.debian.org/debian/ \
+            --parent-mirror-bootstrap http://deb.debian.org/debian/ \
+            --parent-mirror-chroot http://deb.debian.org/debian/ \
+            --parent-mirror-binary http://deb.debian.org/debian/ \
+            --iso-application "NexionOS" \
+            --iso-publisher "NexionOS Project" \
+            --iso-volume "NexionOS_x64"
+
       - name: 🏗️ Build ISO
-        # This executes the full build process (no 'sudo' required for lb build)
         run: |
           cd nexion-live
           sudo lb build
 
+      - name: 📦 Rename ISO with timestamp
+        run: |
+          cd nexion-live
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          if [ -f live-image-amd64.hybrid.iso ]; then
+            mv live-image-amd64.hybrid.iso NexionOS-Bookworm-x64-${TIMESTAMP}.iso
+          fi
+
       - name: ⬆️ Upload NexionOS ISO Artifact
-        # This makes the final ISO downloadable from the GitHub Actions run page
         uses: actions/upload-artifact@v4
         with:
           name: NexionOS-Bookworm-x64-ISO
-          # This is the standard path where live-build places the final ISO
-          path: nexion-live/live-image-amd64.hybrid.iso
+          path: nexion-live/NexionOS-Bookworm-x64-*.iso
           retention-days: 7
+          if-no-files-found: error
+
+      - name: 📊 Display ISO information
+        if: success()
+        run: |
+          cd nexion-live
+          ls -lh NexionOS-Bookworm-x64-*.iso
+          echo "✅ ISO built successfully!"
