@@ -44,16 +44,21 @@ jobs:
             --distribution bookworm \
             --debian-installer live \
             --archive-areas "main contrib non-free non-free-firmware" \
-            --mirror-bootstrap http://deb.debian.org/debian/ \
-            --mirror-chroot http://deb.debian.org/debian/ \
-            --mirror-binary http://deb.debian.org/debian/ \
-            --mirror-debian-installer http://deb.debian.org/debian/ \
-            --parent-mirror-bootstrap http://deb.debian.org/debian/ \
-            --parent-mirror-chroot http://deb.debian.org/debian/ \
-            --parent-mirror-binary http://deb.debian.org/debian/ \
+            --mirror-bootstrap "http://deb.debian.org/debian/" \
+            --mirror-chroot "http://deb.debian.org/debian/" \
+            --mirror-chroot-security "http://security.debian.org/debian-security/" \
+            --mirror-binary "http://deb.debian.org/debian/" \
+            --mirror-binary-security "http://security.debian.org/debian-security/" \
             --iso-application "NexionOS" \
             --iso-publisher "NexionOS Project" \
             --iso-volume "NexionOS_x64"
+      
+      - name: 🔍 Debug sources.list (if build fails)
+        if: failure()
+        run: |
+          echo "=== Checking sources.list ==="
+          cat nexion-live/config/archives/*.list* || true
+          cat nexion-live/chroot/etc/apt/sources.list || true
 
       - name: 🏗️ Build ISO
         run: |
