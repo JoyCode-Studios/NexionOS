@@ -37,21 +37,34 @@ jobs:
           # Clean any previous configuration
           lb clean --purge || true
           
-          # Configure live-build for pure Debian
+          # CRITICAL: Force Debian mode by setting parent distribution
           lb config \
             --mode debian \
-            --architecture amd64 \
             --distribution bookworm \
+            --parent-distribution bookworm \
+            --parent-debian-installer-distribution bookworm \
+            --architecture amd64 \
             --debian-installer live \
             --archive-areas "main contrib non-free non-free-firmware" \
+            --parent-archive-areas "main contrib non-free non-free-firmware" \
             --mirror-bootstrap "http://deb.debian.org/debian/" \
             --mirror-chroot "http://deb.debian.org/debian/" \
             --mirror-chroot-security "http://security.debian.org/debian-security/" \
             --mirror-binary "http://deb.debian.org/debian/" \
             --mirror-binary-security "http://security.debian.org/debian-security/" \
+            --parent-mirror-bootstrap "http://deb.debian.org/debian/" \
+            --parent-mirror-chroot "http://deb.debian.org/debian/" \
+            --parent-mirror-chroot-security "http://security.debian.org/debian-security/" \
+            --parent-mirror-binary "http://deb.debian.org/debian/" \
+            --parent-mirror-binary-security "http://security.debian.org/debian-security/" \
+            --debootstrap-options "--no-check-gpg" \
             --iso-application "NexionOS" \
             --iso-publisher "NexionOS Project" \
             --iso-volume "NexionOS_x64"
+          
+          # FORCE override any Ubuntu references in auto/config
+          sed -i 's|archive.ubuntu.com|deb.debian.org|g' auto/config 2>/dev/null || true
+          sed -i 's|ubuntu|debian|g' auto/config 2>/dev/null || true
       
       - name: 🔍 Debug sources.list (if build fails)
         if: failure()
