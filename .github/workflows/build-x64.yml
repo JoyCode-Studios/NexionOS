@@ -46,12 +46,25 @@ jobs:
               # Build the ISO
               lb build
               
+              echo "=== After build, looking for ISO ==="
+              ls -lah
+              find . -name "*.iso" -o -name "*.img"
+              
               # Rename with timestamp
               TIMESTAMP=$(date +%Y%m%d_%H%M%S)
               if [ -f live-image-amd64.hybrid.iso ]; then
                 mv live-image-amd64.hybrid.iso NexionOS-Bookworm-x64-${TIMESTAMP}.iso
                 ls -lh NexionOS-Bookworm-x64-${TIMESTAMP}.iso
                 echo "✅ ISO built successfully!"
+              elif [ -f live-image-amd64.iso ]; then
+                mv live-image-amd64.iso NexionOS-Bookworm-x64-${TIMESTAMP}.iso
+                ls -lh NexionOS-Bookworm-x64-${TIMESTAMP}.iso
+                echo "✅ ISO built successfully!"
+              else
+                echo "❌ ISO file not found!"
+                echo "Available files:"
+                ls -la
+                exit 1
               fi
             '
       
@@ -59,6 +72,10 @@ jobs:
         run: |
           echo "=== Contents of nexion-live ==="
           ls -lah nexion-live/
+          echo "=== Find all ISOs ==="
+          find nexion-live/ -name "*.iso" -o -name "*.img" 2>/dev/null || echo "No ISO files found"
+          echo "=== Find all files (recursively) ==="
+          find nexion-live/ -type f | head -20
 
       - name: ⬆️ Upload NexionOS ISO Artifact
         uses: actions/upload-artifact@v4
