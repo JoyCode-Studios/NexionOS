@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: debian:bookworm
-      options: --privileged
+      options: --privileged --security-opt seccomp=unconfined
     
     steps:
       - name: 📦 Install dependencies
@@ -25,8 +25,9 @@ jobs:
             xorriso \
             isolinux \
             syslinux-common \
-            git \
-            systemd
+            git
+          apt-get clean
+          rm -rf /var/lib/apt/lists/*
 
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
@@ -51,19 +52,18 @@ jobs:
             --archive-areas "main contrib non-free non-free-firmware" \
             --initramfs live-boot \
             --mirror-bootstrap http://deb.debian.org/debian/ \
-            --mirror-chroot http://deb.debian.org/debian/ \
-            --packages "task-gnome-desktop gnome-shell gdm3 gnome-session xserver-xorg network-manager sudo curl git"
-
+            --mirror-chroot http://deb.debian.org/debian/
+          
           echo "=== Starting build ==="
           lb build
-
+          
           echo "=== Checking for ISO ==="
           ls -lah
-
+          
           if [ -f live-image-amd64.hybrid.iso ]; then
-            cp live-image-amd64.hybrid.iso $GITHUB_WORKSPACE/NexionOS-Bookworm-x64.iso
+            cp live-image-amd64.hybrid.iso ${{ github.workspace }}/NexionOS-Bookworm-x64.iso
             echo "✅ ISO created successfully!"
-            ls -lh $GITHUB_WORKSPACE/NexionOS-Bookworm-x64.iso
+            ls -lh ${{ github.workspace }}/NexionOS-Bookworm-x64.iso
           else
             echo "❌ ISO not found!"
             find . -name "*.iso"
@@ -74,5 +74,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: NexionOS-Bookworm-x64-ISO
-          path: NexionOS-Bookworm-x64.iso
+          path: ${{ github.workspace }}/NexionOS-Bookworm-x64.iso
           retention-days: 7
