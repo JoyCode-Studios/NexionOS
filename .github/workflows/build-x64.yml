@@ -25,22 +25,19 @@ jobs:
             xorriso \
             isolinux \
             syslinux-common \
-            git
+            git \
+            systemd
 
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
 
       - name: 🔧 Fix live-build Ubuntu hardcoding
         run: |
-          # NUCLEAR OPTION: Patch live-build to remove Ubuntu detection
           sed -i 's/ubuntu/debian/g' /usr/lib/live/build/bootstrap_debootstrap
           sed -i 's/archive.ubuntu.com/deb.debian.org/g' /usr/lib/live/build/bootstrap_debootstrap
-          
-          # Also fix the config script
           if [ -f /usr/lib/live/build/config ]; then
             sed -i 's/ubuntu/debian/g' /usr/lib/live/build/config
           fi
-          
           echo "=== Patched live-build scripts ==="
 
       - name: ⚙️ Configure and Build ISO
@@ -54,15 +51,15 @@ jobs:
             --archive-areas "main contrib non-free non-free-firmware" \
             --initramfs live-boot \
             --mirror-bootstrap http://deb.debian.org/debian/ \
-            --mirror-chroot http://deb.debian.org/debian/
-          
+            --mirror-chroot http://deb.debian.org/debian/ \
+            --packages "task-gnome-desktop gnome-shell gdm3 gnome-session xserver-xorg network-manager sudo curl git"
+
           echo "=== Starting build ==="
           lb build
-          
+
           echo "=== Checking for ISO ==="
           ls -lah
-          
-          # Find and copy ISO
+
           if [ -f live-image-amd64.hybrid.iso ]; then
             cp live-image-amd64.hybrid.iso $GITHUB_WORKSPACE/NexionOS-Bookworm-x64.iso
             echo "✅ ISO created successfully!"
