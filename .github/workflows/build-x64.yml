@@ -15,50 +15,44 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🛠️ Install live-build dependencies
+      - name: 🐋 Build ISO in Debian Docker Container
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            live-build \
-            debootstrap \
-            debian-archive-keyring \
-            coreutils \
-            fakeroot \
-            squashfs-tools \
-            xorriso \
-            syslinux \
-            isolinux
-
-      - name: ⚙️ Configure live-build (Debian Bookworm)
-        run: |
-          mkdir -p nexion-live
-          cd nexion-live
-          
-          # Clean up any previous configuration files
-          lb clean --purge || true
-          
-          # Configure live-build - SIMPLE approach
-          lb config \
-            --mode debian \
-            --distribution bookworm \
-            --architecture amd64 \
-            --archive-areas "main contrib non-free non-free-firmware" \
-            --mirror-bootstrap http://deb.debian.org/debian/ \
-            --mirror-chroot http://deb.debian.org/debian/ \
-            --mirror-binary http://deb.debian.org/debian/
-
-      - name: 🏗️ Build ISO
-        run: |
-          cd nexion-live
-          sudo lb build
-
-      - name: 📦 Rename ISO with timestamp
-        run: |
-          cd nexion-live
-          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-          if [ -f live-image-amd64.hybrid.iso ]; then
-            mv live-image-amd64.hybrid.iso NexionOS-Bookworm-x64-${TIMESTAMP}.iso
-          fi
+          docker run --rm --privileged \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            debian:bookworm-slim \
+            bash -c '
+              # Update and install dependencies
+              apt-get update
+              apt-get install -y \
+                live-build \
+                debootstrap \
+                squashfs-tools \
+                xorriso \
+                isolinux \
+                syslinux-common
+              
+              # Create build directory
+              mkdir -p nexion-live
+              cd nexion-live
+              
+              # Configure live-build
+              lb config \
+                --distribution bookworm \
+                --architecture amd64 \
+                --archive-areas "main contrib non-free non-free-firmware"
+              
+              # Build the ISO
+              lb build
+              
+              # Rename with timestamp
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+              if [ -f live-image-amd64.hybrid.iso ]; then
+                mv live-image-amd64.hybrid.iso NexionOS-Bookworm-x64-${TIMESTAMP}.iso
+                ls -lh NexionOS-Bookworm-x64-${TIMESTAMP}.iso
+                echo "✅ ISO built successfully!"
+              fi
+            '
 
       - name: ⬆️ Upload NexionOS ISO Artifact
         uses: actions/upload-artifact@v4
@@ -67,10 +61,3 @@ jobs:
           path: nexion-live/NexionOS-Bookworm-x64-*.iso
           retention-days: 7
           if-no-files-found: error
-
-      - name: 📊 Display ISO information
-        if: success()
-        run: |
-          cd nexion-live
-          ls -lh NexionOS-Bookworm-x64-*.iso
-          echo "✅ ISO built successfully!"
