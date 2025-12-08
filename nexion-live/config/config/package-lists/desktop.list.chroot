@@ -1,0 +1,9 @@
+task-gnome-desktop
+gnome-core
+gdm3
+network-manager
+gnome-terminal
+gnome-system-monitor
+gnome-calculator
+gnome-text-editor
+file-roller
