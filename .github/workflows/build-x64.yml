@@ -15,7 +15,7 @@ jobs:
       options: --privileged --security-opt seccomp=unconfined
       
     steps:
-      - name: 📦 Install dependencies
+      - name: 📦 Install dependencies and fix initramfs link
         run: |
           apt-get update
           apt-get install -y \
@@ -26,20 +26,20 @@ jobs:
             isolinux \
             syslinux-common \
             git \
-            # Also install the initramfs generator package required by live-build
             initramfs-tools
+          
+          # CRITICAL FIX: Create a symlink to satisfy the missing 'initramfs-tools' command
+          # This should resolve the 'initramfs-tools: not found' error (exit code 127).
+          ln -s /usr/sbin/update-initramfs /usr/local/bin/initramfs-tools
+          
           apt-get clean
           rm -rf /var/lib/apt/lists/*
           
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
         
-      # REMOVED: The unnecessary 'Fix live-build Ubuntu hardcoding' step.
-      # The debian:bookworm container should handle this correctly.
-      
       - name: ⚙️ Configure and Build ISO (with GNOME)
         run: |
-          # Use GITHUB_WORKSPACE directly since the build directory is separate
           BUILD_DIR=/tmp/nexion-live
           mkdir -p $BUILD_DIR
           cd $BUILD_DIR
@@ -53,7 +53,7 @@ jobs:
             --distribution bookworm \
             --architecture amd64 \
             --archive-areas "main contrib non-free non-free-firmware" \
-            --initramfs debian \  # <-- FIX: Changed from initramfs-tools to debian
+            --initramfs debian \  # <-- FIX: Corrected system name
             --debian-installer none \
             --mirror-bootstrap http://deb.debian.org/debian/ \
             --mirror-chroot http://deb.debian.org/debian/
