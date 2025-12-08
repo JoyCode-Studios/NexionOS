@@ -1,0 +1,9 @@
+task-gnome-desktop
+gnome-shell
+gdm3
+gnome-session
+xserver-xorg
+network-manager
+sudo
+curl
+git
