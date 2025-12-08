@@ -1,0 +1,95 @@
+name: Build NexionOS ARM64 (Debian Bookworm)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-arm64:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:bookworm
+      options: --privileged
+    
+    steps:
+      - name: 📦 Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y \
+            live-build \
+            debootstrap \
+            squashfs-tools \
+            xorriso \
+            isolinux \
+            syslinux-common \
+            qemu-user-static \
+            binfmt-support \
+            git
+
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔧 Fix live-build Ubuntu hardcoding
+        run: |
+          # NUCLEAR OPTION: Patch live-build to remove Ubuntu detection
+          sed -i 's/ubuntu/debian/g' /usr/lib/live/build/bootstrap_debootstrap
+          sed -i 's/archive.ubuntu.com/deb.debian.org/g' /usr/lib/live/build/bootstrap_debootstrap
+          
+          # Also fix the config script
+          if [ -f /usr/lib/live/build/config ]; then
+            sed -i 's/ubuntu/debian/g' /usr/lib/live/build/config
+          fi
+          
+          echo "=== Patched live-build scripts ==="
+
+      - name: ⚙️ Configure and Build ARM64 ISO
+        run: |
+          mkdir -p /tmp/nexion-live-arm64
+          cd /tmp/nexion-live-arm64
+          
+          lb config \
+            --distribution bookworm \
+            --architecture arm64 \
+            --archive-areas "main contrib non-free non-free-firmware" \
+            --initramfs live-boot \
+            --mirror-bootstrap http://deb.debian.org/debian/ \
+            --mirror-chroot http://deb.debian.org/debian/
+          
+          echo "=== Starting ARM64 build ==="
+          lb build
+          
+          echo "=== Checking for ISO ==="
+          ls -lah
+          
+          # Find and copy ISO (ARM64 might use different naming)
+          if [ -f live-image-arm64.hybrid.iso ]; then
+            cp live-image-arm64.hybrid.iso $GITHUB_WORKSPACE/NexionOS-Bookworm-ARM64.iso
+            echo "✅ ARM64 ISO created successfully!"
+            ls -lh $GITHUB_WORKSPACE/NexionOS-Bookworm-ARM64.iso
+          elif [ -f live-image-arm64.iso ]; then
+            cp live-image-arm64.iso $GITHUB_WORKSPACE/NexionOS-Bookworm-ARM64.iso
+            echo "✅ ARM64 ISO created successfully!"
+            ls -lh $GITHUB_WORKSPACE/NexionOS-Bookworm-ARM64.iso
+          else
+            echo "❌ ISO not found!"
+            find . -name "*.iso"
+            exit 1
+          fi
+
+      - name: ⬆️ Upload ARM64 ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexionOS-Bookworm-ARM64-ISO
+          path: NexionOS-Bookworm-ARM64.iso
+          retention-days: 7
+      
+      - name: 📊 Display final info
+        if: success()
+        run: |
+          echo "✅ Workflow completed successfully!"
+          echo "📦 Artifact name: NexionOS-Bookworm-ARM64-ISO"
+          echo "💾 ISO size: $(du -h NexionOS-Bookworm-ARM64.iso | cut -f1)"
+          echo "🔗 Download from the Artifacts section at the bottom of this workflow run"
