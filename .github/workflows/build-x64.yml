@@ -46,15 +46,21 @@ jobs:
           mkdir -p /tmp/nexion-live
           cd /tmp/nexion-live
           
-          # Configure live-build (removed --initramfs that's causing the error)
+          # Always start clean to avoid stale config
+          lb clean
+          rm -rf config
+          
+          # Configure live-build with valid flags
           lb config \
             --distribution bookworm \
             --architecture amd64 \
             --archive-areas "main contrib non-free non-free-firmware" \
+            --initramfs initramfs-tools \
+            --debian-installer none \
             --mirror-bootstrap http://deb.debian.org/debian/ \
             --mirror-chroot http://deb.debian.org/debian/
           
-          # Copy YOUR existing config directory from repo
+          # Copy your existing config directory from repo
           if [ -d "$GITHUB_WORKSPACE/config" ]; then
             echo "=== Copying existing config from repo ==="
             cp -rv "$GITHUB_WORKSPACE/config"/* config/
@@ -63,30 +69,6 @@ jobs:
           else
             echo "❌ No config directory found in repo!"
             exit 1
-          fi
-          
-          echo "=== Starting build with GNOME ==="
-          lb build
-          
-          echo "=== Checking for ISO ==="
-          ls -lah
-          
-          if [ -f live-image-amd64.hybrid.iso ]; then
-            cp live-image-amd64.hybrid.iso $GITHUB_WORKSPACE/NexionOS-Bookworm-x64-GNOME.iso
-            echo "✅ GNOME ISO created successfully!"
-            ls -lh $GITHUB_WORKSPACE/NexionOS-Bookworm-x64-GNOME.iso
-          else
-            echo "❌ ISO not found!"
-            find . -name "*.iso"
-            exit 1
-          fi YOUR existing config directory from repo
-          if [ -d "$GITHUB_WORKSPACE/config" ]; then
-            echo "=== Copying existing config from repo ==="
-            cp -rv "$GITHUB_WORKSPACE/config"/* config/
-            echo "=== Package lists found: ==="
-            ls -lah config/package-lists/
-          else
-            echo "⚠️ No config directory found in repo"
           fi
           
           echo "=== Starting build with GNOME ==="
