@@ -46,12 +46,11 @@ jobs:
           mkdir -p /tmp/nexion-live
           cd /tmp/nexion-live
           
-          # Configure live-build
+          # Configure live-build (removed --initramfs that's causing the error)
           lb config \
             --distribution bookworm \
             --architecture amd64 \
             --archive-areas "main contrib non-free non-free-firmware" \
-            --initramfs live-boot \
             --mirror-bootstrap http://deb.debian.org/debian/ \
             --mirror-chroot http://deb.debian.org/debian/
           
