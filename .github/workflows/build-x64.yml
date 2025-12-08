@@ -45,19 +45,30 @@ jobs:
               # Build the ISO
               lb build
               
-              # Rename with timestamp
+              # Rename with timestamp and move to workspace root
               TIMESTAMP=$(date +%Y%m%d_%H%M%S)
               if [ -f live-image-amd64.hybrid.iso ]; then
-                mv live-image-amd64.hybrid.iso NexionOS-Bookworm-x64-${TIMESTAMP}.iso
-                ls -lh NexionOS-Bookworm-x64-${TIMESTAMP}.iso
+                mv live-image-amd64.hybrid.iso ../NexionOS-Bookworm-x64-${TIMESTAMP}.iso
+                ls -lh ../NexionOS-Bookworm-x64-${TIMESTAMP}.iso
                 echo "✅ ISO built successfully!"
+              else
+                echo "❌ ISO file not found!"
+                ls -la
+                exit 1
               fi
             '
+      
+      - name: 🔍 Verify ISO exists
+        run: |
+          echo "=== Files in workspace ==="
+          ls -lah ${{ github.workspace }}/
+          echo "=== Looking for ISO ==="
+          find ${{ github.workspace }} -name "*.iso" -type f
 
       - name: ⬆️ Upload NexionOS ISO Artifact
         uses: actions/upload-artifact@v4
         with:
           name: NexionOS-Bookworm-x64-ISO
-          path: nexion-live/NexionOS-Bookworm-x64-*.iso
+          path: NexionOS-Bookworm-x64-*.iso
           retention-days: 7
           if-no-files-found: error
