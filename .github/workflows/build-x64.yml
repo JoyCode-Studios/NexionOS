@@ -1,4 +1,4 @@
-name: Build NexionOS x64 (Debian Bookworm)
+name: Build NexionOS x64 (Debian Bookworm with GNOME)
 
 on:
   push:
@@ -25,7 +25,8 @@ jobs:
             xorriso \
             isolinux \
             syslinux-common \
-            git
+            git \
+            tasksel
           apt-get clean
           rm -rf /var/lib/apt/lists/*
 
@@ -41,7 +42,7 @@ jobs:
           fi
           echo "=== Patched live-build scripts ==="
 
-      - name: ⚙️ Configure and Build ISO
+      - name: ⚙️ Configure and Build ISO (with GNOME)
         run: |
           mkdir -p /tmp/nexion-live
           cd /tmp/nexion-live
@@ -52,27 +53,28 @@ jobs:
             --archive-areas "main contrib non-free non-free-firmware" \
             --initramfs live-boot \
             --mirror-bootstrap http://deb.debian.org/debian/ \
-            --mirror-chroot http://deb.debian.org/debian/
-          
-          echo "=== Starting build ==="
+            --mirror-chroot http://deb.debian.org/debian/ \
+            --packages "task-gnome-desktop gdm3"
+
+          echo "=== Starting build with GNOME ==="
           lb build
           
           echo "=== Checking for ISO ==="
           ls -lah
           
           if [ -f live-image-amd64.hybrid.iso ]; then
-            cp live-image-amd64.hybrid.iso ${{ github.workspace }}/NexionOS-Bookworm-x64.iso
-            echo "✅ ISO created successfully!"
-            ls -lh ${{ github.workspace }}/NexionOS-Bookworm-x64.iso
+            cp live-image-amd64.hybrid.iso ${{ github.workspace }}/NexionOS-Bookworm-x64-GNOME.iso
+            echo "✅ GNOME ISO created successfully!"
+            ls -lh ${{ github.workspace }}/NexionOS-Bookworm-x64-GNOME.iso
           else
             echo "❌ ISO not found!"
             find . -name "*.iso"
             exit 1
           fi
 
-      - name: ⬆️ Upload ISO
+      - name: ⬆️ Upload GNOME ISO
         uses: actions/upload-artifact@v4
         with:
-          name: NexionOS-Bookworm-x64-ISO
-          path: ${{ github.workspace }}/NexionOS-Bookworm-x64.iso
+          name: NexionOS-Bookworm-x64-GNOME-ISO
+          path: ${{ github.workspace }}/NexionOS-Bookworm-x64-GNOME.iso
           retention-days: 7
