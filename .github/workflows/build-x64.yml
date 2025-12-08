@@ -5,95 +5,77 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch: # Allows manual trigger
+  workflow_dispatch:
 
 jobs:
   build-x64:
     runs-on: ubuntu-latest
+    container:
+      image: debian:bookworm
+      options: --privileged
     
     steps:
+      - name: 📦 Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y \
+            live-build \
+            debootstrap \
+            squashfs-tools \
+            xorriso \
+            isolinux \
+            syslinux-common \
+            git
+
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🐋 Build ISO in Debian Docker Container
+      - name: 🔧 Fix live-build Ubuntu hardcoding
         run: |
-          docker run --rm --privileged \
-            -v ${{ github.workspace }}:/workspace \
-            -w /workspace \
-            debian:bookworm-slim \
-            bash -c '
-              # Update and install dependencies
-              apt-get update
-              apt-get install -y \
-                live-build \
-                debootstrap \
-                squashfs-tools \
-                xorriso \
-                isolinux \
-                syslinux-common
-              
-              # Create build directory
-              mkdir -p nexion-live
-              cd nexion-live
-              
-              # Configure live-build
-              lb config \
-                --distribution bookworm \
-                --architecture amd64 \
-                --archive-areas "main contrib non-free non-free-firmware" \
-                --initramfs live-boot
-              
-              # Build the ISO (with verbose output)
-              echo "=== Starting lb build ==="
-              lb build 2>&1 | tee build.log
-              BUILD_EXIT=${PIPESTATUS[0]}
-              
-              echo "=== Build exit code: $BUILD_EXIT ==="
-              echo "=== Last 50 lines of build log ==="
-              tail -50 build.log
-              
-              echo "=== After build, looking for ISO ==="
-              ls -lah
-              find . -name "*.iso" -o -name "*.img" -o -name "*.hybrid.*"
-              
-              if [ $BUILD_EXIT -ne 0 ]; then
-                echo "❌ Build failed with exit code $BUILD_EXIT"
-                exit $BUILD_EXIT
-              fi
-              
-              # Rename with timestamp
-              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-              if [ -f live-image-amd64.hybrid.iso ]; then
-                mv live-image-amd64.hybrid.iso NexionOS-Bookworm-x64-${TIMESTAMP}.iso
-                ls -lh NexionOS-Bookworm-x64-${TIMESTAMP}.iso
-                echo "✅ ISO built successfully!"
-              elif [ -f live-image-amd64.iso ]; then
-                mv live-image-amd64.iso NexionOS-Bookworm-x64-${TIMESTAMP}.iso
-                ls -lh NexionOS-Bookworm-x64-${TIMESTAMP}.iso
-                echo "✅ ISO built successfully!"
-              else
-                echo "❌ ISO file not found after successful build!"
-                echo "Available files:"
-                ls -la
-                echo "=== Checking binary directory ==="
-                ls -lah binary/ 2>/dev/null || echo "No binary directory"
-                exit 1
-              fi
-            '
-      
-      - name: 🔍 List files to debug
-        run: |
-          echo "=== Contents of nexion-live ==="
-          ls -lah nexion-live/
-          echo "=== Find all ISOs ==="
-          find nexion-live/ -name "*.iso" -o -name "*.img" 2>/dev/null || echo "No ISO files found"
-          echo "=== Find all files (recursively) ==="
-          find nexion-live/ -type f | head -20
+          # NUCLEAR OPTION: Patch live-build to remove Ubuntu detection
+          sed -i 's/ubuntu/debian/g' /usr/lib/live/build/bootstrap_debootstrap
+          sed -i 's/archive.ubuntu.com/deb.debian.org/g' /usr/lib/live/build/bootstrap_debootstrap
+          
+          # Also fix the config script
+          if [ -f /usr/lib/live/build/config ]; then
+            sed -i 's/ubuntu/debian/g' /usr/lib/live/build/config
+          fi
+          
+          echo "=== Patched live-build scripts ==="
 
-      - name: ⬆️ Upload NexionOS ISO Artifact
+      - name: ⚙️ Configure and Build ISO
+        run: |
+          mkdir -p /tmp/nexion-live
+          cd /tmp/nexion-live
+          
+          lb config \
+            --distribution bookworm \
+            --architecture amd64 \
+            --archive-areas "main contrib non-free non-free-firmware" \
+            --initramfs live-boot \
+            --mirror-bootstrap http://deb.debian.org/debian/ \
+            --mirror-chroot http://deb.debian.org/debian/
+          
+          echo "=== Starting build ==="
+          lb build
+          
+          echo "=== Checking for ISO ==="
+          ls -lah
+          
+          # Find and copy ISO
+          if [ -f live-image-amd64.hybrid.iso ]; then
+            cp live-image-amd64.hybrid.iso $GITHUB_WORKSPACE/NexionOS-Bookworm-x64.iso
+            echo "✅ ISO created successfully!"
+            ls -lh $GITHUB_WORKSPACE/NexionOS-Bookworm-x64.iso
+          else
+            echo "❌ ISO not found!"
+            find . -name "*.iso"
+            exit 1
+          fi
+
+      - name: ⬆️ Upload ISO
         uses: actions/upload-artifact@v4
         with:
           name: NexionOS-Bookworm-x64-ISO
-          path: nexion-live/*.iso
+          path: NexionOS-Bookworm-x64.iso
           retention-days: 7
-          if-no-files-found: error
