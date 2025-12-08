@@ -1,10 +1,29 @@
+# Core GNOME desktop
 gnome-shell
+gnome-session
 gdm3
 gnome-terminal
 nautilus
+gnome-control-center
+gnome-system-monitor
+
+# Graphics stack
+xserver-xorg
+xserver-xorg-video-all
+xserver-xorg-input-all
+
+# Desktop task metapackage (pulls in themes, fonts, utilities)
+task-gnome-desktop
+
+# Networking and utilities
 network-manager
 sudo
 curl
 git
+
+# Fonts for polish
+fonts-dejavu
+
+# Custom Nexion packages
 /var/cache/apt/archives/nexion-x64.deb
 /var/cache/apt/archives/nexion-lite-deb-x64.deb
