@@ -43,12 +43,23 @@ jobs:
                 --archive-areas "main contrib non-free non-free-firmware" \
                 --initramfs live-boot
               
-              # Build the ISO
-              lb build
+              # Build the ISO (with verbose output)
+              echo "=== Starting lb build ==="
+              lb build 2>&1 | tee build.log
+              BUILD_EXIT=${PIPESTATUS[0]}
+              
+              echo "=== Build exit code: $BUILD_EXIT ==="
+              echo "=== Last 50 lines of build log ==="
+              tail -50 build.log
               
               echo "=== After build, looking for ISO ==="
               ls -lah
-              find . -name "*.iso" -o -name "*.img"
+              find . -name "*.iso" -o -name "*.img" -o -name "*.hybrid.*"
+              
+              if [ $BUILD_EXIT -ne 0 ]; then
+                echo "❌ Build failed with exit code $BUILD_EXIT"
+                exit $BUILD_EXIT
+              fi
               
               # Rename with timestamp
               TIMESTAMP=$(date +%Y%m%d_%H%M%S)
@@ -61,9 +72,11 @@ jobs:
                 ls -lh NexionOS-Bookworm-x64-${TIMESTAMP}.iso
                 echo "✅ ISO built successfully!"
               else
-                echo "❌ ISO file not found!"
+                echo "❌ ISO file not found after successful build!"
                 echo "Available files:"
                 ls -la
+                echo "=== Checking binary directory ==="
+                ls -lah binary/ 2>/dev/null || echo "No binary directory"
                 exit 1
               fi
             '
