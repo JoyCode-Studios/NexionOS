@@ -16,17 +16,19 @@ LB_DISTRIBUTION="bookworm"
 LB_PARENT_DISTRIBUTION="bookworm"
 LB_PARENT_DEBIAN_INSTALLER_DISTRIBUTION="bookworm"
 
-# Security Suite ⬅️ **CRITICAL FIX ADDED HERE**
+# Security Suite ⬅️ CRITICAL FIX CONFIRMED
 LB_SECURITY_SUITE="bookworm-security"
 
 # Parent mirrors (bootstrap/chroot/binary)
+# USE THE STANDARD DEBIAN MIRROR FOR MAIN REPOS:
 LB_PARENT_MIRROR_BOOTSTRAP="http://deb.debian.org/debian/"
 LB_PARENT_MIRROR_CHROOT="http://deb.debian.org/debian/"
-LB_PARENT_MIRROR_CHROOT_SECURITY="http://deb.debian.org/debian-security"
+# USE THE OFFICIAL SECURITY MIRROR FOR SECURITY REPOS:
+LB_PARENT_MIRROR_CHROOT_SECURITY="http://security.debian.org/debian-security"
 LB_PARENT_MIRROR_CHROOT_VOLATILE="http://deb.debian.org/debian/"
 LB_PARENT_MIRROR_CHROOT_BACKPORTS="http://deb.debian.org/debian/"
 LB_PARENT_MIRROR_BINARY="http://deb.debian.org/debian/"
-LB_PARENT_MIRROR_BINARY_SECURITY="http://deb.debian.org/debian-security"
+LB_PARENT_MIRROR_BINARY_SECURITY="http://security.debian.org/debian-security"
 LB_PARENT_MIRROR_BINARY_VOLATILE="http://deb.debian.org/debian/"
 LB_PARENT_MIRROR_BINARY_BACKPORTS="http://deb.debian.org/debian/"
 LB_PARENT_MIRROR_DEBIAN_INSTALLER="http://deb.debian.org/debian/"
@@ -34,11 +36,12 @@ LB_PARENT_MIRROR_DEBIAN_INSTALLER="http://deb.debian.org/debian/"
 # ISO mirrors
 LB_MIRROR_BOOTSTRAP="http://deb.debian.org/debian/"
 LB_MIRROR_CHROOT="http://deb.debian.org/debian/"
-LB_MIRROR_CHROOT_SECURITY="http://deb.debian.org/debian-security"
+# USE THE OFFICIAL SECURITY MIRROR FOR SECURITY REPOS:
+LB_MIRROR_CHROOT_SECURITY="http://security.debian.org/debian-security"
 LB_MIRROR_CHROOT_VOLATILE="http://deb.debian.org/debian/"
 LB_MIRROR_CHROOT_BACKPORTS="http://deb.debian.org/debian/"
 LB_MIRROR_BINARY="http://deb.debian.org/debian/"
-LB_MIRROR_BINARY_SECURITY="http://deb.debian.org/debian-security"
+LB_MIRROR_BINARY_SECURITY="http://security.debian.org/debian-security"
 LB_MIRROR_BINARY_VOLATILE="http://deb.debian.org/debian/"
 LB_MIRROR_BINARY_BACKPORTS="http://deb.debian.org/debian/"
 LB_MIRROR_DEBIAN_INSTALLER="http://deb.debian.org/debian/"
@@ -56,7 +59,7 @@ LB_BOOTSTRAP_QEMU_STATIC=""
 # Live system options
 LB_SYSTEM="live"
 LB_MODE="debian"
-LB_TASKSEL="standard, gnome-desktop, ssh-server"
+LB_TASKSEL="standard, gnome-desktop, ssh-server" # GNOME Install Fix Confirmed!
 LB_USE_FAKEROOT="false"
 LB_UNION_FILESYSTEM="overlay"
 LB_ZSYNC="true"
