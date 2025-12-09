@@ -1,30 +1,36 @@
+# Enable all archives
 LB_ARCHIVES=""
 LB_ARCHIVE_AREAS="main contrib non-free non-free-firmware"
 
+# Disable memtest (optional)
 LB_MEMTEST="none"
 
-LB_MIRROR_BINARY="http://deb.debian.org/debian/"
-LB_MIRROR_BINARY_BACKPORTS="http://deb.debian.org/debian/"
-LB_MIRROR_BINARY_SECURITY="http://deb.debian.org/debian-security/"
-LB_MIRROR_BINARY_VOLATILE="http://deb.debian.org/debian/"
+# Mirrors for the live image
 LB_MIRROR_BOOTSTRAP="http://deb.debian.org/debian/"
 LB_MIRROR_CHROOT="http://deb.debian.org/debian/"
 LB_MIRROR_CHROOT_BACKPORTS="http://deb.debian.org/debian/"
-LB_MIRROR_CHROOT_SECURITY="http://deb.debian.org/debian-security/"
+LB_MIRROR_CHROOT_SECURITY="http://security.debian.org/debian-security/dists/bookworm-security/"
 LB_MIRROR_CHROOT_VOLATILE="http://deb.debian.org/debian/"
+LB_MIRROR_BINARY="http://deb.debian.org/debian/"
+LB_MIRROR_BINARY_BACKPORTS="http://deb.debian.org/debian/"
+LB_MIRROR_BINARY_SECURITY="http://security.debian.org/debian-security/dists/bookworm-security/"
+LB_MIRROR_BINARY_VOLATILE="http://deb.debian.org/debian/"
 LB_MIRROR_DEBIAN_INSTALLER="http://deb.debian.org/debian/"
 
+# Mode and system type
 LB_MODE="debian"
 LB_SYSTEM="live"
 LB_SECURITY="true"
 
+# Source options
 LB_SOURCE="false"
 LB_SOURCE_IMAGES="tar"
 LB_ZSYNC="true"
 
+# Filesystem and root options
 LB_UNION_FILESYSTEM="overlay"
-
 LB_USE_FAKEROOT="false"
 
+# Tasks and installers
 LB_TASKSEL="apt"
 LB_WIN32_LOADER="false"
