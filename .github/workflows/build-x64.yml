@@ -31,16 +31,13 @@ jobs:
 
       - name: ⚙️ Configure live-build using nexion-live
         run: |
-          WORKDIR=$HOME/nexion-live
+          WORKDIR=$GITHUB_WORKSPACE/nexion-live
           cd $WORKDIR
 
           # Clean old state
           sudo lb clean || true
 
-          # Copy your config folder into WORKDIR (use sudo for permissions)
-          sudo cp -rv $WORKDIR/* config/
-
-          # Configure live-build
+          # Configure live-build directly using this folder as config
           sudo lb config \
             --distribution bookworm \
             --archive-areas "main contrib non-free non-free-firmware" \
@@ -58,7 +55,7 @@ jobs:
 
       - name: 🚀 Build ISO
         run: |
-          cd $HOME/nexion-live
+          cd $GITHUB_WORKSPACE/nexion-live
           sudo lb build
 
           echo "=== Checking for ISO ==="
