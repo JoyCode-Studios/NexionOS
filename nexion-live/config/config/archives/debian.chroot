@@ -1,0 +1,13 @@
+# NexionOS APT Sources for Debian 12 (Bookworm)
+
+# Main stable repository
+deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
+
+# Updated packages for stable (e.g., bug fixes)
+deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
+
+# Security updates (CRITICAL FIX: Uses 'bookworm-security' distribution name)
+deb http://security.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware
+deb-src http://security.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware
