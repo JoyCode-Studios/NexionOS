@@ -1,103 +1,55 @@
 # config/bootstrap - options for live-build(7), bootstrap stage
 
-# $LB_ARCHITECTURES: select chroot architectures
+# Architecture
 LB_ARCHITECTURES="amd64"
 
-# $LB_BOOTSTRAP_INCLUDE: include packages on base
+# Include/exclude packages
 LB_BOOTSTRAP_INCLUDE=""
-
-# $LB_BOOTSTRAP_EXCLUDE: exclude packages on base
 LB_BOOTSTRAP_EXCLUDE=""
 
-# $LB_BOOTSTRAP_FLAVOUR: select flavour to use
+# Flavour & keyring
 LB_BOOTSTRAP_FLAVOUR=""
-
-# $LB_BOOTSTRAP_KEYRING: set distribution keyring
 LB_BOOTSTRAP_KEYRING=""
 
-# $LB_DISTRIBUTION: select distribution to use
+# Distribution
 LB_DISTRIBUTION="bookworm"
-
-# $LB_PARENT_DISTRIBUTION: select parent distribution to use
 LB_PARENT_DISTRIBUTION="bookworm"
-
-# $LB_PARENT_DEBIAN_INSTALLER_DISTRIBUTION: parent distribution for debian-installer
 LB_PARENT_DEBIAN_INSTALLER_DISTRIBUTION="bookworm"
 
-# $LB_PARENT_MIRROR_BOOTSTRAP: parent mirror to bootstrap from
+# Mirrors for parent bootstrap/chroot/binary
 LB_PARENT_MIRROR_BOOTSTRAP="http://deb.debian.org/debian/"
-
-# $LB_PARENT_MIRROR_CHROOT: parent mirror to fetch packages from
 LB_PARENT_MIRROR_CHROOT="http://deb.debian.org/debian/"
-
-# $LB_PARENT_MIRROR_CHROOT_SECURITY: security parent mirror
-LB_PARENT_MIRROR_CHROOT_SECURITY="http://security.debian.org/debian-security"
-
-# $LB_PARENT_MIRROR_CHROOT_VOLATILE: volatile parent mirror
+LB_PARENT_MIRROR_CHROOT_SECURITY="http://deb.debian.org/debian-security/"
 LB_PARENT_MIRROR_CHROOT_VOLATILE="http://deb.debian.org/debian/"
-
-# $LB_PARENT_MIRROR_CHROOT_BACKPORTS: backports parent mirror
 LB_PARENT_MIRROR_CHROOT_BACKPORTS="http://deb.debian.org/debian/"
 
-# $LB_PARENT_MIRROR_BINARY: parent mirror in the image
 LB_PARENT_MIRROR_BINARY="http://deb.debian.org/debian/"
-
-# $LB_PARENT_MIRROR_BINARY_SECURITY: security parent mirror in the image
-LB_PARENT_MIRROR_BINARY_SECURITY="http://security.debian.org/debian-security"
-
-# $LB_PARENT_MIRROR_BINARY_VOLATILE: volatile parent mirror in the image
+LB_PARENT_MIRROR_BINARY_SECURITY="http://deb.debian.org/debian-security/"
 LB_PARENT_MIRROR_BINARY_VOLATILE="http://deb.debian.org/debian/"
-
-# $LB_PARENT_MIRROR_BINARY_BACKPORTS: backports parent mirror in the image
 LB_PARENT_MIRROR_BINARY_BACKPORTS="http://deb.debian.org/debian/"
 
-# $LB_PARENT_MIRROR_DEBIAN_INSTALLER: debian-installer parent mirror
 LB_PARENT_MIRROR_DEBIAN_INSTALLER="http://deb.debian.org/debian/"
 
-# $LB_MIRROR_BOOTSTRAP: mirror to bootstrap from
+# Mirrors for ISO image
 LB_MIRROR_BOOTSTRAP="http://deb.debian.org/debian/"
-
-# $LB_MIRROR_CHROOT: mirror to fetch packages from
 LB_MIRROR_CHROOT="http://deb.debian.org/debian/"
-
-# $LB_MIRROR_CHROOT_SECURITY: security mirror
-LB_MIRROR_CHROOT_SECURITY="http://security.debian.org/debian-security"
-
-# $LB_MIRROR_CHROOT_VOLATILE: volatile mirror
+LB_MIRROR_CHROOT_SECURITY="http://deb.debian.org/debian-security/"
 LB_MIRROR_CHROOT_VOLATILE="http://deb.debian.org/debian/"
-
-# $LB_MIRROR_CHROOT_BACKPORTS: backports mirror
 LB_MIRROR_CHROOT_BACKPORTS="http://deb.debian.org/debian/"
 
-# $LB_MIRROR_BINARY: mirror in the image
 LB_MIRROR_BINARY="http://deb.debian.org/debian/"
-
-# $LB_MIRROR_BINARY_SECURITY: security mirror in the image
-LB_MIRROR_BINARY_SECURITY="http://security.debian.org/debian-security"
-
-# $LB_MIRROR_BINARY_VOLATILE: volatile mirror in the image
+LB_MIRROR_BINARY_SECURITY="http://deb.debian.org/debian-security/"
 LB_MIRROR_BINARY_VOLATILE="http://deb.debian.org/debian/"
-
-# $LB_MIRROR_BINARY_BACKPORTS: backports mirror in the image
 LB_MIRROR_BINARY_BACKPORTS="http://deb.debian.org/debian/"
 
-# $LB_MIRROR_DEBIAN_INSTALLER: debian-installer mirror
 LB_MIRROR_DEBIAN_INSTALLER="http://deb.debian.org/debian/"
 
-# $LB_ARCHIVES: enable available third-party archives
+# Archive areas
 LB_ARCHIVES=""
+LB_ARCHIVE_AREAS="main contrib non-free non-free-firmware"
+LB_PARENT_ARCHIVE_AREAS="main contrib non-free non-free-firmware"
 
-# $LB_ARCHIVE_AREAS: select archive areas to use
-LB_ARCHIVE_AREAS="main contrib non-free"
-
-# $LB_PARENT_ARCHIVE_AREAS: select parent archive areas to use
-LB_PARENT_ARCHIVE_AREAS="main contrib non-free"
-
-# $LB_BOOTSTRAP_QEMU_ARCHITECTURES: architectures to use foreign bootstrap
+# QEMU bootstrap (for foreign architectures, optional)
 LB_BOOTSTRAP_QEMU_ARCHITECTURES=""
-
-# $LB_BOOTSTRAP_QEMU_EXCLUDE: packages to exclude during foreign bootstrap
 LB_BOOTSTRAP_QEMU_EXCLUDE=""
-
-# $LB_BOOTSTRAP_QEMU_STATIC: static qemu binary for foreign bootstrap
 LB_BOOTSTRAP_QEMU_STATIC=""
