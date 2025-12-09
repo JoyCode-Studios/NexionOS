@@ -39,8 +39,7 @@ jobs:
         run: |
           mkdir -p $WORKDIR
           cd $WORKDIR
-          # CRITICAL STEP: Aggressively clean up previous build artifacts and caches
-          # This prevents persistent repository errors from cached bootstrap stages.
+          # CRITICAL STEP: Aggressively clean up previous build artifacts and caches.
           sudo lb clean --purge || true 
 
       # Copy config folder if not already present
@@ -51,7 +50,7 @@ jobs:
             cp -r $WORKDIR/* config/
           fi
 
-      # Configure live-build
+      # Configure live-build (FIX: Explicitly setting security mirror to override defaults)
       - name: Configure live-build
         run: |
           cd $WORKDIR
@@ -65,6 +64,8 @@ jobs:
             --mirror-bootstrap http://deb.debian.org/debian/ \
             --mirror-chroot http://deb.debian.org/debian/ \
             --mirror-binary http://deb.debian.org/debian/ \
+            --security true \
+            --security-mirror http://security.debian.org/debian-security \
             --apt-indices false
 
       # Build ISO
