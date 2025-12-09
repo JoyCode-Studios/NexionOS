@@ -22,7 +22,7 @@ LB_INTERACTIVE="false"
 
 # $LB_KEYRING_PACKAGES: set keyring packages
 # (Default: empty)
-LB_KEYRING_PACKAGES="ubuntu-keyring"
+LB_KEYRING_PACKAGES="debian-archive-keyring" # <-- FIX: Changed from ubuntu-keyring to the correct Debian keyring
 
 # $LB_LINUX_FLAVOURS: set kernel flavour to use
 # (Default: autodetected)
@@ -31,6 +31,9 @@ LB_LINUX_FLAVOURS="generic"
 # $LB_LINUX_PACKAGES: set kernel packages to use
 # (Default: autodetected)
 LB_LINUX_PACKAGES="linux"
+
+# FIX: CRITICAL ADDITION FOR DEBIAN 12 (BOOKWORM) SECURITY REPOSITORY
+LB_SECURITY_SUITE="bookworm-security"
 
 # $LB_SECURITY: enable security updates
 # (Default: true)
