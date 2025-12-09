@@ -1,34 +1,45 @@
 # config/chroot - options for live-build(7), chroot stage
 
-# Chroot filesystem
+# $LB_CHROOT_FILESYSTEM: set chroot filesystem
+# (Default: squashfs)
 LB_CHROOT_FILESYSTEM="squashfs"
 
-# Union filesystem (Debian Bookworm defaults to overlayfs, not aufs)
-LB_UNION_FILESYSTEM="overlayfs"
+# $LB_UNION_FILESYSTEM: set union filesystem
+# (Default: aufs)
+LB_UNION_FILESYSTEM="aufs"
 
-# Expose root as read only
+# $LB_EXPOSED_ROOT: expose root as read only
+# (Default: false)
 LB_EXPOSED_ROOT="false"
 
-# Hook commands
+# $LB_HOOKS: set hook commands
+# (Default: empty)
 LB_HOOKS=""
 
-# Interactive build
+# $LB_INTERACTIVE: set interactive build
+# (Default: false)
 LB_INTERACTIVE="false"
 
-# Keyring packages (use Debian keyring, not Ubuntu)
-LB_KEYRING_PACKAGES="debian-archive-keyring"
+# $LB_KEYRING_PACKAGES: set keyring packages
+# (Default: empty)
+LB_KEYRING_PACKAGES="ubuntu-keyring"
 
-# Kernel flavour (Bookworm defaults: amd64 → generic)
-LB_LINUX_FLAVOURS="amd64"
+# $LB_LINUX_FLAVOURS: set kernel flavour to use
+# (Default: autodetected)
+LB_LINUX_FLAVOURS="generic"
 
-# Kernel packages
-LB_LINUX_PACKAGES="linux-image"
+# $LB_LINUX_PACKAGES: set kernel packages to use
+# (Default: autodetected)
+LB_LINUX_PACKAGES="linux"
 
-# Security updates
+# $LB_SECURITY: enable security updates
+# (Default: true)
 LB_SECURITY="true"
 
-# Volatile updates (Debian dropped volatile; keep false to avoid confusion)
-LB_VOLATILE="false"
+# $LB_VOLATILE: enable volatile updates
+# (Default: true)
+LB_VOLATILE="true"
 
-# Backports updates
-LB_BACKPORTS="true"
+# $LB_BACKPORTS: enable backports updates
+# (Default: false)
+LB_BACKPORTS="false"
