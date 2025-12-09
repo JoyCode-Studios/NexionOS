@@ -18,12 +18,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Install dependencies
-      - name: 📦 Install dependencies
+      # 📦 Install initial dependencies (Do NOT install live-build here yet)
+      - name: 📦 Install base dependencies
         run: |
+          # Only install supporting tools, we will install a newer live-build later.
           sudo apt-get update
           sudo apt-get install -y \
-            live-build \
             debootstrap \
             squashfs-tools \
             xorriso \
@@ -34,39 +34,51 @@ jobs:
             curl
           sudo apt-get clean
 
+      # 🚀 CRITICAL FIX: Install latest live-build from Backports
+      # This step should fix the repository error by using modern live-build logic.
+      - name: Install latest live-build from Backports
+        run: |
+          echo "deb http://deb.debian.org/debian bookworm-backports main" | sudo tee /etc/apt/sources.list.d/backports.list
+          sudo apt update
+          # Install live-build from backports (-t specifies target release)
+          sudo apt install live-build -t bookworm-backports -y
+          echo "✅ live-build updated to modern version."
+          lb --version
+
       # Setup working directory and PURGE old caches
       - name: Setup WORKDIR and Purge Cache
         run: |
           mkdir -p $WORKDIR
           cd $WORKDIR
           # CRITICAL STEP: Aggressively clean up previous build artifacts and caches.
-          # This prevents persistent repository errors from cached bootstrap stages.
           sudo lb clean --purge || true 
 
       # Copy config folder if not already present
       - name: Copy config folder
         run: |
           cd $WORKDIR
+          # NOTE: The original logic here seems redundant/incorrect.
+          # Assuming your config files are in the root and need to be moved to $WORKDIR/config
           if [ ! -d config ]; then
-            cp -r $WORKDIR/* config/
+            # We assume your config files (like bootstrap) are in the root of the repo
+            cp -r ./* config/ 
           fi
-
-      # Configure live-build (Simplified - relies on config files for fixes)
+          
+      # Configure live-build (Simplified - relies on updated live-build and config files)
       - name: Configure live-build
         run: |
           cd $WORKDIR
-          # Using only the basic, guaranteed-to-work parameters
+          # We rely on the config files (like config/bootstrap) to provide mirrors/suites.
+          # NOTE: The missing --apt-recommends false is recommended for small ISO size.
           sudo lb config \
             --distribution bookworm \
-            --archive-areas "main contrib non-free non-free-firmware" \
             --architecture amd64 \
+            --archive-areas "main contrib non-free non-free-firmware" \
             --debian-installer none \
             --binary-images iso-hybrid \
             --initramfs live-boot \
-            --mirror-bootstrap http://deb.debian.org/debian/ \
-            --mirror-chroot http://deb.debian.org/debian/ \
-            --mirror-binary http://deb.debian.org/debian/ \
-            --apt-indices false
+            --apt-indices false \
+            --apt-recommends false
 
       # Build ISO
       - name: Build ISO
