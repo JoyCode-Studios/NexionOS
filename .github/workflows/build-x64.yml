@@ -1,4 +1,4 @@
-name: Build NexionOS x64 (Debian Bookworm with GNOME)
+name: Build NexionOS x64 (Debian Bookworm GNOME)
 
 on:
   push:
@@ -10,93 +10,75 @@ on:
 jobs:
   build-x64:
     runs-on: ubuntu-latest
-    container:
-      image: debian:bookworm
-      options: --privileged --security-opt seccomp=unconfined
-      
+
     steps:
-      - name: 📦 Install dependencies and fix initramfs link
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🛠 Install Debian Live-Build dependencies
         run: |
-          apt-get update
-          apt-get install -y \
-            live-build \
+          sudo apt-get update
+          sudo apt-get install -y \
             debootstrap \
             squashfs-tools \
             xorriso \
             isolinux \
             syslinux-common \
+            live-build \
             git \
-            initramfs-tools
-          
-          # CRITICAL FIX: Create a symlink to satisfy the missing 'initramfs-tools' command
-          # This should resolve the 'initramfs-tools: not found' error (exit code 127).
-          ln -s /usr/sbin/update-initramfs /usr/local/bin/initramfs-tools
-          
-          apt-get clean
-          rm -rf /var/lib/apt/lists/*
-          
-      - name: ⬇️ Checkout repository
-        uses: actions/checkout@v4
-        
-      - name: ⚙️ Configure and Build ISO (with GNOME)
+            dosfstools \
+            ca-certificates
+
+      - name: ⚙️ Configure live-build
         run: |
-          BUILD_DIR=/tmp/nexion-live
-          mkdir -p $BUILD_DIR
-          cd $BUILD_DIR
-                    
-          # Always start clean to avoid stale config
-          lb clean
-          rm -rf config
-                    
-          # Configure live-build with the corrected flag
-          lb config \
+          WORKDIR=$HOME/nexion-build
+          mkdir -p $WORKDIR
+          cd $WORKDIR
+
+          # Clean old state (just in case)
+          sudo lb clean || true
+          sudo rm -rf config
+
+          # Main configuration
+          sudo lb config \
             --distribution bookworm \
-            --architecture amd64 \
             --archive-areas "main contrib non-free non-free-firmware" \
-            --initramfs debian \  # <-- FIX: Corrected system name
+            --architecture amd64 \
+            --initramfs initramfs \
             --debian-installer none \
             --mirror-bootstrap http://deb.debian.org/debian/ \
-            --mirror-chroot http://deb.debian.org/debian/
-                    
-          # Copy your existing config directory from repo
-          if [ -d "$GITHUB_WORKSPACE/config" ]; then
-            echo "=== Copying existing config from repo ==="
-            cp -rv "$GITHUB_WORKSPACE/config"/* config/
-            echo "=== Package lists found: ==="
-            ls -lah config/package-lists/
-          else
-            echo "❌ No config directory found in repo!"
-            exit 1
-          fi
-                    
-          echo "=== Starting build with GNOME ==="
-          lb build
-                    
+            --mirror-chroot http://deb.debian.org/debian/ \
+            --mirror-binary http://deb.debian.org/debian/ \
+            --binary-images iso-hybrid \
+            --apt-indices false
+
+          echo "=== Copying your config/ folder ==="
+          cp -rv $GITHUB_WORKSPACE/config/* config/
+
+          echo "=== Contents of package lists ==="
+          ls -lah config/package-lists/
+
+      - name: 🚀 Build ISO
+        run: |
+          cd $HOME/nexion-build
+          sudo lb build
+
           echo "=== Checking for ISO ==="
           ls -lah
-                    
+
           if [ -f live-image-amd64.hybrid.iso ]; then
             ISO_NAME="NexionOS-Bookworm-x64-GNOME.iso"
             cp live-image-amd64.hybrid.iso $GITHUB_WORKSPACE/$ISO_NAME
-            echo "✅ GNOME ISO created successfully!"
-            ls -lh $GITHUB_WORKSPACE/$ISO_NAME
+            echo "ISO successfully created!"
           else
-            echo "❌ ISO not found!"
+            echo "❌ ISO NOT FOUND"
             find . -name "*.iso"
             exit 1
           fi
-          
-      - name: ⬆️ Upload GNOME ISO
+
+      - name: 📤 Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
-          name: NexionOS-Bookworm-x64-GNOME-ISO
+          name: NexionOS-Bookworm-x64-GNOME
           path: NexionOS-Bookworm-x64-GNOME.iso
           retention-days: 7
-          
-      - name: 📊 Display final info
-        if: success()
-        run: |
-          echo "✅ Workflow completed successfully!"
-          echo "📦 Artifact name: NexionOS-Bookworm-x64-GNOME-ISO"
-          echo "💾 ISO size: $(du -h $GITHUB_WORKSPACE/NexionOS-Bookworm-x64-GNOME.iso | cut -f1)"
-          echo "🔗 Download from the Artifacts section"
