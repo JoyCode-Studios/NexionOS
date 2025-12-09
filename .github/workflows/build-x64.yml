@@ -1,73 +1,66 @@
-name: Build NexionOS x64 (Debian Bookworm with GNOME)
+name: Build NexionOS ISO
 
 on:
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  build-x64:
+  build-iso:
     runs-on: ubuntu-latest
-    container:
-      image: debian:bookworm
-      options: --privileged --security-opt seccomp=unconfined
 
     steps:
-      - name: ⬇️ Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repo
+      uses: actions/checkout@v4
 
-      - name: 📦 Install dependencies
-        run: |
-          apt-get update
-          apt-get install -y \
-            live-build \
-            debootstrap \
-            squashfs-tools \
-            xorriso \
-            isolinux \
-            syslinux-common \
-            git \
-            initramfs-tools \
-            sudo
-          apt-get clean
-          rm -rf /var/lib/apt/lists/*
+    - name: Install live-build + tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          live-build \
+          syslinux \
+          isolinux \
+          xorriso \
+          squashfs-tools \
+          curl \
+          ca-certificates
 
-      - name: ⚙️ Build NexionOS ISO
-        run: |
-          WORKDIR="$GITHUB_WORKSPACE/nexion-live"
-          cd "$WORKDIR"
+    - name: Show environment
+      run: |
+        echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
+        ls -al "$GITHUB_WORKSPACE"
 
-          echo "=== Cleaning old build ==="
-          sudo lb clean || true
+    - name: Move into nexion-live
+      run: |
+        if [ ! -d "$GITHUB_WORKSPACE/nexion-live" ]; then
+          echo "ERROR: nexion-live folder not found"
+          exit 1
+        fi
+        ls -al "$GITHUB_WORKSPACE/nexion-live"
 
-          echo "=== Starting build ==="
-          sudo lb build
+    - name: Clean previous build
+      working-directory: ${{ github.workspace }}/nexion-live
+      run: |
+        echo "=== Cleaning old build ==="
+        sudo lb clean --purge
 
-          echo "=== Checking for ISO ==="
-          if [ -f live-image-amd64.hybrid.iso ]; then
-            ISO_NAME="NexionOS-Bookworm-x64-GNOME.iso"
-            cp live-image-amd64.hybrid.iso "$GITHUB_WORKSPACE/$ISO_NAME"
-            echo "✅ ISO created successfully!"
-            ls -lh "$GITHUB_WORKSPACE/$ISO_NAME"
-          else
-            echo "❌ ISO not found!"
-            find . -name "*.iso"
-            exit 1
-          fi
+    - name: Configure build (safety)
+      working-directory: ${{ github.workspace }}/nexion-live
+      run: |
+        echo "=== Running lb config (ensure configs are applied) ==="
+        sudo lb config \
+          --distribution bookworm \
+          --architectures amd64 \
+          --archive-areas "main contrib non-free non-free-firmware"
 
-      - name: ⬆️ Upload ISO Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: NexionOS-Bookworm-x64-GNOME-ISO
-          path: NexionOS-Bookworm-x64-GNOME.iso
-          retention-days: 7
+    - name: Build ISO
+      working-directory: ${{ github.workspace }}/nexion-live
+      run: |
+        echo "=== Starting build ==="
+        sudo lb build --debug
 
-      - name: 📊 Display final info
-        if: success()
-        run: |
-          echo "✅ Workflow completed successfully!"
-          echo "📦 Artifact name: NexionOS-Bookworm-x64-GNOME-ISO"
-          echo "💾 ISO size: $(du -h $GITHUB_WORKSPACE/NexionOS-Bookworm-x64-GNOME.iso | cut -f1)"
-          echo "🔗 Download from the Artifacts section"
+    - name: Upload ISO artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: nexionos-iso
+        path: nexion-live/*.iso
