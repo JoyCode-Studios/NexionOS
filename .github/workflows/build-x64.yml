@@ -15,7 +15,7 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🛠 Install Debian Live-Build dependencies
+      - name: 🛠 Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -29,17 +29,18 @@ jobs:
             dosfstools \
             ca-certificates
 
-      - name: ⚙️ Configure live-build
+      - name: ⚙️ Configure live-build using nexion-live
         run: |
-          WORKDIR=$HOME/nexion-build
-          mkdir -p $WORKDIR
+          WORKDIR=$HOME/nexion-live
           cd $WORKDIR
 
-          # Clean old state (just in case)
+          # Clean old state
           sudo lb clean || true
-          sudo rm -rf config
 
-          # Main configuration
+          # Copy your config folder into WORKDIR (use sudo for permissions)
+          sudo cp -rv $WORKDIR/* config/
+
+          # Configure live-build
           sudo lb config \
             --distribution bookworm \
             --archive-areas "main contrib non-free non-free-firmware" \
@@ -52,15 +53,12 @@ jobs:
             --binary-images iso-hybrid \
             --apt-indices false
 
-          echo "=== Copying your config/ folder ==="
-          cp -rv $GITHUB_WORKSPACE/config/* config/
-
-          echo "=== Contents of package lists ==="
+          echo "=== Package lists ==="
           ls -lah config/package-lists/
 
       - name: 🚀 Build ISO
         run: |
-          cd $HOME/nexion-build
+          cd $HOME/nexion-live
           sudo lb build
 
           echo "=== Checking for ISO ==="
@@ -69,9 +67,9 @@ jobs:
           if [ -f live-image-amd64.hybrid.iso ]; then
             ISO_NAME="NexionOS-Bookworm-x64-GNOME.iso"
             cp live-image-amd64.hybrid.iso $GITHUB_WORKSPACE/$ISO_NAME
-            echo "ISO successfully created!"
+            echo "✅ ISO created successfully!"
           else
-            echo "❌ ISO NOT FOUND"
+            echo "❌ ISO not found!"
             find . -name "*.iso"
             exit 1
           fi
