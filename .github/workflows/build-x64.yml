@@ -1,4 +1,4 @@
-name: Build NexionOS ISO (x64 + ARM64)
+name: Build NexionOS x64 (Debian Bookworm)
 
 on:
   push:
@@ -8,113 +8,83 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-x64:
     runs-on: ubuntu-latest
-    container:
-      image: debian:bookworm
-      options: --privileged --security-opt seccomp=unconfined
 
     steps:
-      - name: 🛠 Install system dependencies
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Install dependencies
         run: |
-          apt-get update
-          apt-get install -y \
-            ca-certificates \
-            sudo \
+          sudo apt-get update
+          sudo apt-get install -y \
             live-build \
             debootstrap \
             squashfs-tools \
             xorriso \
             isolinux \
             syslinux-common \
-            git \
-            initramfs-tools \
-            qemu-user-static \
-            binfmt-support
-          apt-get clean
+            git
+          sudo apt-get clean
           rm -rf /var/lib/apt/lists/*
 
-      - name: ⬇️ Checkout repository
-        uses: actions/checkout@v4
-
-      - name: ⚙️ Build x64 ISO
+      - name: ⚙️ Configure build directory
         run: |
-          WORKDIR="$GITHUB_WORKSPACE/nexion-live"
-          cd "$WORKDIR"
-          echo "=== Cleaning old x64 build ==="
+          BUILD_DIR="$GITHUB_WORKSPACE/nexion-live"
+          cd "$BUILD_DIR"
+          
+          # Clean old state
           sudo lb clean || true
-          echo "=== Copying config folder ==="
-          # Only copy if config exists and avoid overwriting itself
-          if [ -d config ]; then
-            echo "Config folder exists, skipping copy"
-          else
-            cp -rv "$WORKDIR/config" "$WORKDIR/config"
+
+          # Make sure config folder is correct (do NOT copy over itself)
+          if [ ! -d "config" ]; then
+            echo "❌ Config folder missing in nexion-live!"
+            exit 1
           fi
-          echo "=== Configuring live-build for x64 ==="
+
+          # Configure live-build
           sudo lb config \
             --distribution bookworm \
             --architecture amd64 \
             --archive-areas "main contrib non-free non-free-firmware" \
+            --initramfs live-boot \
             --debian-installer none \
-            --binary-images iso-hybrid \
             --mirror-bootstrap http://deb.debian.org/debian/ \
             --mirror-chroot http://deb.debian.org/debian/ \
             --mirror-binary http://deb.debian.org/debian/ \
-            --initramfs live-boot
-          echo "=== Starting x64 build ==="
+            --binary-images iso-hybrid \
+            --apt-indices false
+
+      - name: 🛠️ Build ISO
+        run: |
+          BUILD_DIR="$GITHUB_WORKSPACE/nexion-live"
+          cd "$BUILD_DIR"
           sudo lb build
-          echo "=== Checking x64 ISO ==="
+
+          echo "=== Checking for ISO ==="
+          ls -lah
+
           if [ -f live-image-amd64.hybrid.iso ]; then
             ISO_NAME="NexionOS-Bookworm-x64.iso"
             cp live-image-amd64.hybrid.iso "$GITHUB_WORKSPACE/$ISO_NAME"
-            echo "✅ x64 ISO created: $ISO_NAME"
+            echo "✅ ISO created successfully!"
           else
-            echo "❌ x64 ISO not found!"
+            echo "❌ ISO not found!"
+            find . -name "*.iso"
             exit 1
           fi
 
-      - name: ⚙️ Build ARM64 ISO
-        run: |
-          WORKDIR="$GITHUB_WORKSPACE/nexion-live-arm64"
-          mkdir -p "$WORKDIR"
-          cp -r "$GITHUB_WORKSPACE/nexion-live/"* "$WORKDIR/"
-          cd "$WORKDIR"
-          echo "=== Cleaning old ARM64 build ==="
-          sudo lb clean || true
-          echo "=== Configuring live-build for ARM64 ==="
-          sudo lb config \
-            --distribution bookworm \
-            --architecture arm64 \
-            --archive-areas "main contrib non-free non-free-firmware" \
-            --debian-installer none \
-            --binary-images iso-hybrid \
-            --mirror-bootstrap http://deb.debian.org/debian/ \
-            --mirror-chroot http://deb.debian.org/debian/ \
-            --mirror-binary http://deb.debian.org/debian/ \
-            --initramfs live-boot
-          echo "=== Starting ARM64 build ==="
-          sudo lb build
-          echo "=== Checking ARM64 ISO ==="
-          if [ -f live-image-arm64.hybrid.iso ]; then
-            ISO_NAME="NexionOS-Bookworm-ARM64.iso"
-            cp live-image-arm64.hybrid.iso "$GITHUB_WORKSPACE/$ISO_NAME"
-            echo "✅ ARM64 ISO created: $ISO_NAME"
-          else
-            echo "❌ ARM64 ISO not found!"
-            exit 1
-          fi
-
-      - name: ⬆️ Upload ISOs
+      - name: ⬆️ Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
-          name: NexionOS-ISOs
-          path: |
-            ${{ github.workspace }}/NexionOS-Bookworm-x64.iso
-            ${{ github.workspace }}/NexionOS-Bookworm-ARM64.iso
+          name: NexionOS-Bookworm-x64-ISO
+          path: NexionOS-Bookworm-x64.iso
           retention-days: 7
 
-      - name: 📊 Summary
+      - name: 📊 Final Info
         if: success()
         run: |
           echo "✅ Workflow completed successfully!"
-          ls -lh $GITHUB_WORKSPACE/*.iso
+          echo "📦 Artifact: NexionOS-Bookworm-x64-ISO"
+          echo "💾 ISO size: $(du -h $GITHUB_WORKSPACE/NexionOS-Bookworm-x64.iso | cut -f1)"
