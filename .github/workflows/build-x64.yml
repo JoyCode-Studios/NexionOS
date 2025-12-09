@@ -1,4 +1,4 @@
-name: Build NexionOS x64 (Debian Bookworm Full ISO)
+name: Build NexionOS x64 (Debian Bookworm)
 
 on:
   push:
@@ -15,9 +15,6 @@ jobs:
       options: --privileged --security-opt seccomp=unconfined
 
     steps:
-      - name: ⬇️ Checkout repository
-        uses: actions/checkout@v4
-
       - name: 📦 Install dependencies
         run: |
           apt-get update
@@ -30,41 +27,39 @@ jobs:
             syslinux-common \
             git \
             initramfs-tools \
-            sudo
+            gnupg \
+            curl
           apt-get clean
           rm -rf /var/lib/apt/lists/*
 
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
       - name: ⚙️ Configure and Build ISO
         run: |
-          WORKDIR="$GITHUB_WORKSPACE/nexion-live"
-          cd "$WORKDIR"
+          BUILD_DIR="$GITHUB_WORKSPACE/nexion-live"
+          cd "$BUILD_DIR"
 
           echo "=== Cleaning old build ==="
           sudo lb clean || true
-
-          echo "=== Copying config folder (if needed) ==="
-          if [ -d "$WORKDIR/config" ]; then
-            sudo cp -rv "$WORKDIR/config"/* config/
-          fi
 
           echo "=== Configuring live-build ==="
           sudo lb config \
             --distribution bookworm \
             --architecture amd64 \
             --archive-areas "main contrib non-free non-free-firmware" \
+            --initramfs live-boot \
             --debian-installer none \
-            --binary-images iso-hybrid \
             --mirror-bootstrap http://deb.debian.org/debian/ \
             --mirror-chroot http://deb.debian.org/debian/ \
-            --mirror-binary http://deb.debian.org/debian/ \
-            --apt-indices false
+            --mirror-binary http://deb.debian.org/debian/
 
-          echo "=== Starting ISO build ==="
+          echo "=== Starting build ==="
           sudo lb build
 
           echo "=== Checking for ISO ==="
           if [ -f live-image-amd64.hybrid.iso ]; then
-            ISO_NAME="NexionOS-Bookworm-x64-Full.iso"
+            ISO_NAME="NexionOS-Bookworm-x64-GNOME.iso"
             cp live-image-amd64.hybrid.iso "$GITHUB_WORKSPACE/$ISO_NAME"
             echo "✅ ISO created successfully!"
           else
@@ -76,14 +71,13 @@ jobs:
       - name: ⬆️ Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
-          name: NexionOS-Bookworm-x64-Full-ISO
-          path: NexionOS-Bookworm-x64-Full.iso
+          name: NexionOS-Bookworm-x64-GNOME-ISO
+          path: NexionOS-Bookworm-x64-GNOME.iso
           retention-days: 7
 
       - name: 📊 Display final info
         if: success()
         run: |
           echo "✅ Workflow completed successfully!"
-          echo "📦 Artifact name: NexionOS-Bookworm-x64-Full-ISO"
-          echo "💾 ISO size: $(du -h $GITHUB_WORKSPACE/NexionOS-Bookworm-x64-Full.iso | cut -f1)"
-          echo "🔗 Download from the Artifacts section"
+          echo "📦 Artifact name: NexionOS-Bookworm-x64-GNOME-ISO"
+          echo "💾 ISO size: $(du -h $GITHUB_WORKSPACE/NexionOS-Bookworm-x64-GNOME.iso | cut -f1)"
