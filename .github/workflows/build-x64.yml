@@ -34,12 +34,14 @@ jobs:
             curl
           sudo apt-get clean
 
-      # Setup working directory
-      - name: Setup WORKDIR
+      # Setup working directory and PURGE old caches
+      - name: Setup WORKDIR and Purge Cache
         run: |
           mkdir -p $WORKDIR
           cd $WORKDIR
-          sudo lb clean || true
+          # CRITICAL STEP: Aggressively clean up previous build artifacts and caches
+          # This prevents persistent repository errors from cached bootstrap stages.
+          sudo lb clean --purge || true 
 
       # Copy config folder if not already present
       - name: Copy config folder
