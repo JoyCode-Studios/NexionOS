@@ -19,29 +19,25 @@ LB_PARENT_DEBIAN_INSTALLER_DISTRIBUTION="bookworm"
 # Parent mirrors (bootstrap/chroot/binary)
 LB_PARENT_MIRROR_BOOTSTRAP="http://deb.debian.org/debian/"
 LB_PARENT_MIRROR_CHROOT="http://deb.debian.org/debian/"
-LB_PARENT_MIRROR_CHROOT_SECURITY="http://security.debian.org/debian-security/dists/bookworm-security/"
+LB_PARENT_MIRROR_CHROOT_SECURITY="http://security.debian.org/debian-security"
 LB_PARENT_MIRROR_CHROOT_VOLATILE="http://deb.debian.org/debian/"
 LB_PARENT_MIRROR_CHROOT_BACKPORTS="http://deb.debian.org/debian/"
-
 LB_PARENT_MIRROR_BINARY="http://deb.debian.org/debian/"
-LB_PARENT_MIRROR_BINARY_SECURITY="http://security.debian.org/debian-security/dists/bookworm-security/"
+LB_PARENT_MIRROR_BINARY_SECURITY="http://security.debian.org/debian-security"
 LB_PARENT_MIRROR_BINARY_VOLATILE="http://deb.debian.org/debian/"
 LB_PARENT_MIRROR_BINARY_BACKPORTS="http://deb.debian.org/debian/"
-
 LB_PARENT_MIRROR_DEBIAN_INSTALLER="http://deb.debian.org/debian/"
 
 # ISO mirrors
 LB_MIRROR_BOOTSTRAP="http://deb.debian.org/debian/"
 LB_MIRROR_CHROOT="http://deb.debian.org/debian/"
-LB_MIRROR_CHROOT_SECURITY="http://security.debian.org/debian-security/dists/bookworm-security/"
+LB_MIRROR_CHROOT_SECURITY="http://security.debian.org/debian-security"
 LB_MIRROR_CHROOT_VOLATILE="http://deb.debian.org/debian/"
 LB_MIRROR_CHROOT_BACKPORTS="http://deb.debian.org/debian/"
-
 LB_MIRROR_BINARY="http://deb.debian.org/debian/"
-LB_MIRROR_BINARY_SECURITY="http://security.debian.org/debian-security/dists/bookworm-security/"
+LB_MIRROR_BINARY_SECURITY="http://security.debian.org/debian-security"
 LB_MIRROR_BINARY_VOLATILE="http://deb.debian.org/debian/"
 LB_MIRROR_BINARY_BACKPORTS="http://deb.debian.org/debian/"
-
 LB_MIRROR_DEBIAN_INSTALLER="http://deb.debian.org/debian/"
 
 # Archive areas
