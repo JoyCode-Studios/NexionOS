@@ -16,29 +16,29 @@ LB_DISTRIBUTION="bookworm"
 LB_PARENT_DISTRIBUTION="bookworm"
 LB_PARENT_DEBIAN_INSTALLER_DISTRIBUTION="bookworm"
 
-# Mirrors for parent bootstrap/chroot/binary
+# Parent mirrors (bootstrap/chroot/binary)
 LB_PARENT_MIRROR_BOOTSTRAP="http://deb.debian.org/debian/"
 LB_PARENT_MIRROR_CHROOT="http://deb.debian.org/debian/"
-LB_PARENT_MIRROR_CHROOT_SECURITY="http://security.debian.org/debian-security/"
+LB_PARENT_MIRROR_CHROOT_SECURITY="http://security.debian.org/debian-security/dists/bookworm-security/"
 LB_PARENT_MIRROR_CHROOT_VOLATILE="http://deb.debian.org/debian/"
 LB_PARENT_MIRROR_CHROOT_BACKPORTS="http://deb.debian.org/debian/"
 
 LB_PARENT_MIRROR_BINARY="http://deb.debian.org/debian/"
-LB_PARENT_MIRROR_BINARY_SECURITY="http://security.debian.org/debian-security/"
+LB_PARENT_MIRROR_BINARY_SECURITY="http://security.debian.org/debian-security/dists/bookworm-security/"
 LB_PARENT_MIRROR_BINARY_VOLATILE="http://deb.debian.org/debian/"
 LB_PARENT_MIRROR_BINARY_BACKPORTS="http://deb.debian.org/debian/"
 
 LB_PARENT_MIRROR_DEBIAN_INSTALLER="http://deb.debian.org/debian/"
 
-# Mirrors for ISO image
+# ISO mirrors
 LB_MIRROR_BOOTSTRAP="http://deb.debian.org/debian/"
 LB_MIRROR_CHROOT="http://deb.debian.org/debian/"
-LB_MIRROR_CHROOT_SECURITY="http://security.debian.org/debian-security/"
+LB_MIRROR_CHROOT_SECURITY="http://security.debian.org/debian-security/dists/bookworm-security/"
 LB_MIRROR_CHROOT_VOLATILE="http://deb.debian.org/debian/"
 LB_MIRROR_CHROOT_BACKPORTS="http://deb.debian.org/debian/"
 
 LB_MIRROR_BINARY="http://deb.debian.org/debian/"
-LB_MIRROR_BINARY_SECURITY="http://security.debian.org/debian-security/"
+LB_MIRROR_BINARY_SECURITY="http://security.debian.org/debian-security/dists/bookworm-security/"
 LB_MIRROR_BINARY_VOLATILE="http://deb.debian.org/debian/"
 LB_MIRROR_BINARY_BACKPORTS="http://deb.debian.org/debian/"
 
@@ -49,12 +49,12 @@ LB_ARCHIVES=""
 LB_ARCHIVE_AREAS="main contrib non-free non-free-firmware"
 LB_PARENT_ARCHIVE_AREAS="main contrib non-free non-free-firmware"
 
-# QEMU bootstrap (for foreign architectures, optional)
+# QEMU bootstrap (for foreign architectures)
 LB_BOOTSTRAP_QEMU_ARCHITECTURES=""
 LB_BOOTSTRAP_QEMU_EXCLUDE=""
 LB_BOOTSTRAP_QEMU_STATIC=""
 
-# Live system type
+# Live system options
 LB_SYSTEM="live"
 LB_MODE="debian"
 LB_TASKSEL="standard, gnome-desktop, ssh-server"
