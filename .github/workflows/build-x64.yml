@@ -51,7 +51,7 @@ jobs:
             cp -r $WORKDIR/* config/
           fi
 
-      # Configure live-build (FINAL FIX: Command-line mirror overrides)
+      # Configure live-build (FINAL FIXES + GNOME INSTALLATION)
       - name: Configure live-build
         run: |
           cd $WORKDIR
@@ -69,6 +69,7 @@ jobs:
             --security-suite bookworm-security \
             --security-mirror-chroot http://security.debian.org/debian-security \
             --security-mirror-binary http://security.debian.org/debian-security \
+            --tasksel-packages "gnome-desktop" \
             --apt-indices false
 
       # Build ISO
