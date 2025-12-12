@@ -12,16 +12,13 @@ jobs:
     env:
       WORKDIR: ${{ github.workspace }}/nexion-live
       ISO_NAME: NexionOS-Bookworm-x64-GNOME.iso
-
+    
     steps:
-      # Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      # 📦 Install initial dependencies (Do NOT install live-build here yet)
+      
       - name: 📦 Install base dependencies
         run: |
-          # Only install supporting tools, we will install a newer live-build later.
           sudo apt-get update
           sudo apt-get install -y \
             debootstrap \
@@ -31,60 +28,55 @@ jobs:
             syslinux-common \
             git \
             wget \
-            curl
+            curl \
+            gnupg
           sudo apt-get clean
-
-      # 🚀 CRITICAL FIX: Install latest live-build from Backports
-      # This step fixes the repo error by using modern live-build logic.
-      - name: Install latest live-build from Backports
+      
+      - name: 🚀 Install latest live-build from Debian Backports
         run: |
-          # 1. Add the Bookworm Backports Repository
+          # Import Debian GPG keys properly
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6ED0E7B82643E131
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 78DBA3BC47EF2265
+          
+          # Add Debian Bookworm Backports repository
           echo "deb http://deb.debian.org/debian bookworm-backports main" | sudo tee /etc/apt/sources.list.d/backports.list
           
-          # 2. FIX GPG KEY ERROR: Install Debian GPG Keys so the repository can be trusted
-          sudo apt install debian-archive-keyring -y
+          # Update and install latest live-build
+          sudo apt-get update
+          sudo apt-get install -y -t bookworm-backports live-build
           
-          # 3. Update package list
-          sudo apt update
-          
-          # 4. Install live-build from backports (-t specifies target release)
-          sudo apt install live-build -t bookworm-backports -y
-          echo "✅ live-build updated to modern version."
+          echo "✅ live-build updated to latest version"
           lb --version
-
-      # Setup working directory and PURGE old caches
-      - name: Setup WORKDIR and Purge Cache
+      
+      - name: Setup WORKDIR
         run: |
           mkdir -p $WORKDIR
           cd $WORKDIR
-          # CRITICAL STEP: Aggressively clean up previous build artifacts and caches.
-          sudo lb clean --purge || true 
-
-      # Copy config folder if not already present
-      - name: Copy config folder
+          sudo lb clean --purge || true
+      
+      - name: Copy config from repo
         run: |
           cd $WORKDIR
-          # NOTE: Assuming your config files are in the root and need to be moved to $WORKDIR/config
-          if [ ! -d config ]; then
-            cp -r ./* config/ 
+          if [ -d "$GITHUB_WORKSPACE/config" ]; then
+            echo "=== Copying config from repo ==="
+            cp -rv "$GITHUB_WORKSPACE/config"/* config/ || cp -rv "$GITHUB_WORKSPACE/config" .
+            echo "=== Config copied ==="
+            ls -lah config/
+          else
+            echo "⚠️ No config directory found"
           fi
-          
-      # Configure live-build (Simplified - relies on updated live-build and config files)
+      
       - name: Configure live-build
         run: |
           cd $WORKDIR
-          # We rely on the config files (like config/bootstrap) to provide mirrors/suites.
           sudo lb config \
             --distribution bookworm \
             --architecture amd64 \
             --archive-areas "main contrib non-free non-free-firmware" \
             --debian-installer none \
             --binary-images iso-hybrid \
-            --initramfs live-boot \
-            --apt-indices false \
-            --apt-recommends false
-
-      # Build ISO
+            --apt-indices false
+      
       - name: Build ISO
         run: |
           cd $WORKDIR
@@ -94,13 +86,13 @@ jobs:
           if [ -f live-image-amd64.hybrid.iso ]; then
             cp live-image-amd64.hybrid.iso $GITHUB_WORKSPACE/$ISO_NAME
             echo "✅ ISO created successfully: $ISO_NAME"
+            ls -lh $GITHUB_WORKSPACE/$ISO_NAME
           else
             echo "❌ ISO not found!"
             find . -name "*.iso"
             exit 1
           fi
-
-      # Upload artifact
+      
       - name: Upload ISO
         uses: actions/upload-artifact@v4
         with:
